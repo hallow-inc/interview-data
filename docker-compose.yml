@@ -1,0 +1,108 @@
+version: '3.8'
+services:
+  minio:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: adminuser
+      MINIO_ROOT_PASSWORD: admin123
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  minio-setup:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./sample_data/__store/:/data
+    entrypoint: >
+      /bin/sh -c "
+      cleanup() {
+        echo 'Cleaning up MinIO bucket contents...';
+        /usr/bin/mc rm --recursive --force datalake/ 2>/dev/null || true;
+        echo 'MinIO cleanup completed';
+        exit 0;
+      }
+
+      trap cleanup SIGTERM SIGINT;
+
+      sleep 5;
+
+      /usr/bin/mc alias set s3_bucket http://minio:9000 adminuser admin123;
+      /usr/bin/mc mb s3_bucket/datalake --ignore-existing;
+      echo 'S3 bucket created successfully';
+
+      /usr/bin/mc cp --recursive /data/ s3_bucket/datalake/;
+      echo 'dbt source data successfully loaded';
+
+      while true; do
+        sleep 1 &
+        wait $!
+      done
+      "
+    healthcheck:
+      test: ["CMD", "/usr/bin/mc", "ls", "datalake"]
+      interval: 10s
+      timeout: 3s
+      retries: 2
+
+  data_server:
+    build: ./data_server
+    ports:
+      - "9090:9090"
+    environment:
+      WEBHOOK_URL: http://event_handler:4000/webhook/events
+    depends_on:
+      - event_handler
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  event_handler:
+    build: ./event_handler
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: "4000"
+      S3_ENDPOINT: http:/minio:9000
+    depends_on:
+      minio-setup:
+        condition: service_healthy
+
+  batch_pipelines:
+    build: ./batch_pipelines
+    depends_on:
+      data_server:
+        condition: service_healthy
+      minio-setup:
+        condition: service_healthy
+    environment:
+      DATA_BASE_URL: http://data_server:9090
+      S3_ENDPOINT: http://minio:9000
+    volumes:
+      - ./batch_pipelines:/app
+
+  dbt_pipeline:
+    build: ./dbt_pipeline
+    depends_on:
+      minio-setup:
+        condition: service_healthy
+    environment:
+      S3_ENDPOINT: http://minio:9000
+    volumes:
+      - ./dbt_pipeline/:/app
+      - ./results/:/results
+
+volumes:
+  minio_data:

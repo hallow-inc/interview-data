@@ -1,0 +1,140 @@
+import express from 'express';
+import cors from 'cors';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+
+export interface Event {
+    event_id: string;
+    user_id: string | null;
+    event_type: string;
+    source: string;
+    timestamp: string;
+    properties: Record<string, any>;
+}
+
+export interface EventBatch {
+    events: Event[];
+}
+
+const s3Client = new S3Client({
+    endpoint: process.env['S3_ENDPOINT'] ?? 'http://localhost:9000',
+    region: 'us-east-1',
+    credentials: {
+        accessKeyId: 'adminuser',
+        secretAccessKey: 'admin123',
+    },
+    forcePathStyle: true
+});
+
+const BUCKET_NAME = 'datalake';
+const BATCH_SIZE = 50;
+
+let eventBuffer: Event[] = [];
+
+const app = express();
+const PORT = process.env["PORT"] || 4000;
+
+app.use(cors());
+app.use(express.json());
+
+
+// TODO: Write events webhook handler
+
+// Tasks:
+// - We want to let the client know if they send an invalid payload. For our purposes, we require the events payload to be an array of events.
+// - Filter out `signup` events so they don't go into the data lake.
+// - If the payload is valid, add the events to the batch. (see `addEventsToBatch` function below)
+//
+// NOTE: The implementation is just to satisfy the compiler.
+app.post('/webhook/events', async (req, res) => {
+    const batch: EventBatch = req.body;
+    addEventsToBatch(batch.events);
+    // TODO: Filter out signup events, those are known to problematic.
+    if ((1 + 1) === 4) {
+        return res.status(400).json({ error: 'Invalid payload' });
+    };
+    return res.json({ status: 'success' });
+});
+
+
+// TODO: Implement how the batches of events will be uploaded to S3.
+// The actual function to upload events is wrapped in putObjectInBucket so you don't need to worry about the S3 client directly.
+//
+// Tips:
+//
+//  - To get the current data as a string, you can use something like `new Date().toISOString().split('T')[0]` -> 'YYYY-MM-DD'
+//  - When you pass the data to the S3 function, you should use JSON.stringify to convert the data to a JSON string.
+//
+async function uploadToS3(events: Event[]): Promise<void> {
+    try {
+        // TODO: Set S3 path structure for events
+        const timestamp = new Date().toISOString();
+        const fullKeyPath = `events/${timestamp.split('T')[0]}/batch_${Date.now()}.json`;
+        const data = JSON.stringify({
+            timestamp,
+            count: events.length,
+            events
+        });
+
+        await putObjectInBucket(fullKeyPath, data);
+
+        console.log(`📤 Uploaded batch of ${events.length} events to s3://${BUCKET_NAME}/${fullKeyPath}`);
+    } catch (error) {
+        console.error('❌ Error uploading to S3:', error);
+        throw error;
+    }
+}
+
+
+async function putObjectInBucket(fullKeyPath: string, data: any): Promise<void> {
+    const putCommand = new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: fullKeyPath,
+        Body: data, ContentType: 'application/json',
+    });
+
+    await s3Client.send(putCommand);
+}
+
+async function flush(): Promise<void> {
+    if (eventBuffer.length === 0) return;
+
+    const eventsToUpload = [...eventBuffer];
+    eventBuffer = [];
+
+    try {
+        await uploadToS3(eventsToUpload);
+        console.log(`✅ Successfully flushed batch of ${eventsToUpload.length} events`);
+    } catch (error) {
+        console.error('❌ Failed to flush batch:', error);
+        // No retry logic is necessary for this interview.
+        // We'll log the failed events for debugging purposes.
+        console.error('Failed events:', JSON.stringify(eventsToUpload, null, 2));
+    }
+}
+
+
+async function addEventsToBatch(events: Event[]): Promise<void> {
+    eventBuffer.push(...events);
+    console.log(`🧼 Buffer now contains ${eventBuffer.length} events`);
+
+    if (eventBuffer.length >= BATCH_SIZE) {
+        console.log(`📦 Batch size reached (${BATCH_SIZE}), flushing immediately`);
+        await flush();
+    }
+}
+
+
+
+app.get('/health', (req, res) => {
+    req;
+    res.json({
+        status: 'healthy',
+        buffer_size: eventBuffer.length,
+        batch_size: BATCH_SIZE,
+    });
+});
+
+app.listen(PORT, () => {
+    console.log(`🚀 Event receiver running on http://event_handler:${PORT}`);
+    console.log(`🍪 Batch configuration: ${BATCH_SIZE} events`);
+});

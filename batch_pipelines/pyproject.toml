@@ -1,0 +1,10 @@
+[project]
+name = "batch_pipelines"
+version = "0.1.0"
+description = "Batxh processing pipelines for data interviews."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "boto3>=1.40.9",
+    "httpx>=0.28.1",
+]

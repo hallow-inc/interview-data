@@ -1,0 +1,18 @@
+version: 2
+
+sources:
+  - name: datalake
+    schema: mart
+    meta:
+      external_location: "s3://datalake"
+    tables:
+      - name: users
+        config:
+          external_location: "read_csv('s3://datalake/data/users.csv', header=true)"
+      - name: sessions
+        config:
+          external_location: "read_csv('s3://datalake/data/sessions.csv', header=true)"
+      - name: content
+        config:
+          external_location: "read_csv('s3://datalake/data/content.csv', header=true)"
+
