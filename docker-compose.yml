@@ -102,7 +102,7 @@ services:
       S3_ENDPOINT: http://minio:9000
     volumes:
       - ./dbt_pipeline/:/app
-      - ./results/:/results
+      - ./results/:/app/results
 
 volumes:
   minio_data:

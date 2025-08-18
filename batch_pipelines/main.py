@@ -56,11 +56,49 @@ class DataPipeline:
 
     # TODO: Write a generic pipeline executor that can be used to run any basic pipeline.
     # The `func` parameter is provided to allow for custom transformations or metadata application.
+    # This will need to work for both the `users` and `content` pipelines.
     #
+
     # Tasks:
     #   - Use the fetch_api_data method to get data from the API
     #   - Set the S3 key path
     #   - Send the data to S3
+    #
+    # `users` payload schema:
+    #
+    # {
+    #   count: int,
+    #   has_more: true|false,
+    #   limit: 200,
+    #   next_offset: int,
+    #   offset: int,
+    #   total_users: 10000,
+    #   users: [
+    #     id: str, # i.e, "user_1",
+    #     age: int,
+    #     status: "free|paid|trial",
+    #     country: "US|BR|IT|FR",
+    #     created_at: str # i.e., "2023-11-08T00:00:00Z"
+    #      ...
+    #   ]
+    # }
+    #
+    # `content` payload schema:
+    #
+    # {
+    #   count: int,
+    #   total_content: 1000,
+    #   content: [
+    #      {
+    #        id: str,
+    #        prayer_type: "academic|podcast|reflection|lectio_divina|rosary|meditation",
+    #        media_type: "audio|video|text",
+    #        created_at: str # i.e., "2023-11-08T00:00:00Z"
+    #      },
+    #      ...
+    #   ]
+    # }
+    #
     def run_pipeline(self, func: Optional[Callable] = None) -> None:
         """Pipeline executor"""
 

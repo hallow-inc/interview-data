@@ -3,7 +3,7 @@ dbt_pipeline:
   outputs:
     dev:
       type: duckdb
-      path: /results/dbt.duckdb
+      path: /app/results/dbt.duckdb
       threads: 4
       extensions:
         - httpfs

@@ -19,7 +19,7 @@ import (
 
 type Event struct {
 	EventID    string         `json:"event_id"`
-	UserID     *string        `json:"user_id"`
+	UserID     *User          `json:"user_id"`
 	EventType  string         `json:"event_type"`
 	Source     string         `json:"source"`
 	Timestamp  string         `json:"timestamp"`
@@ -37,19 +37,63 @@ type EventGenerator struct {
 	httpClient *http.Client
 }
 
+type User struct {
+	ID        string    `json:"id"`
+	Age       int       `json:"age"`
+	Status    string    `json:"status"`
+	Country   string    `json:"country"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type Content struct {
+	ID         string    `json:"id"`
+	MediaType  string    `json:"media_type"`
+	PrayerType string    `json:"prayer_type"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
 var (
 	eventTypes = []string{"click", "view", "purchase", "signup", "pray", "share", "like"}
 	sources    = []string{"web", "apple", "android"}
-	users      = make([]string, 10000)
-	content    = make([]string, 1000)
+	users      = make([]User, 10000)
+	content    = make([]Content, 1000)
+
+	countries   = []string{"US", "BR", "IT", "FR"}
+	statuses    = []string{"free", "paid", "trial"}
+	mediaTypes  = []string{"video", "audio", "text"}
+	prayerTypes = []string{"academic", "podcast", "reflection", "lectio_divina", "rosary", "meditation"}
 )
+
+func randomTimestampInYear(year int) time.Time {
+	start := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	daysInYear := 365
+	if (year%4 == 0 && year%100 != 0) || (year%400 == 0) {
+		daysInYear = 366
+	}
+	days := rand.Intn(daysInYear)
+	return start.AddDate(0, 0, days)
+}
 
 func init() {
 	for i := range 10000 {
-		users[i] = fmt.Sprintf("user_%d", i+1)
+		user := User{
+			ID:        fmt.Sprintf("user_%d", i+1),
+			Age:       rand.Intn(65) + 18,
+			Status:    statuses[rand.Intn(len(statuses))],
+			Country:   countries[rand.Intn(len(countries))],
+			CreatedAt: randomTimestampInYear(2023),
+		}
+		users[i] = user
 	}
 	for i := range 1000 {
-		content[i] = fmt.Sprintf("content_%d", i+1)
+		asset := Content{
+			ID:         fmt.Sprintf("content_%d", i+1),
+			MediaType:  mediaTypes[rand.Intn(len(mediaTypes))],
+			PrayerType: prayerTypes[rand.Intn(len(prayerTypes))],
+			CreatedAt:  randomTimestampInYear(2024),
+		}
+		content[i] = asset
 	}
 }
 
@@ -76,13 +120,11 @@ func (eg *EventGenerator) generateRandomEvent() []Event {
 		event.Properties["product_id"] = fmt.Sprintf("prod_%d", rand.Intn(100)+1)
 	}
 
-	// Introduce data quality issues (~5% of the time)
-	if rand.Float64() < 0.05 {
-		if rand.Float64() < 0.5 {
-			event.Timestamp = "invalid-timestamp" // Bad timestamp
-		} else {
-			event.UserID = nil // Missing user_id
-		}
+	if event.EventType == "view" || event.EventType == "like" || event.EventType == "share" {
+		randomContent := content[rand.Intn(len(content))]
+		event.Properties["content_id"] = randomContent.ID
+		event.Properties["media_type"] = randomContent.MediaType
+		event.Properties["prayer_type"] = randomContent.PrayerType
 	}
 
 	// Create duplicates (~3% of the time)
