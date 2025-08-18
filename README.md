@@ -18,8 +18,7 @@ This repo is a partial implementation with multiple services that you'll be expe
 
 ### System Architecture
 
-The system 
-
+```
        ┌────────────┐
        │Data Server │
  ┌─────│(Mock APIs) │──────┐
@@ -33,6 +32,8 @@ The system
          │---------│
          │Analytics│
          └─────────┘
+```
+
 
 #### Data Server
 
