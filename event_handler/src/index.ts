@@ -44,6 +44,33 @@ app.use(express.json());
 // - Filter out `signup` events so they don't go into the data lake.
 // - If the payload is valid, add the events to the batch. (see `addEventsToBatch` function below)
 //
+//
+// Event schema:
+//
+// {
+//   event_id: "uuid",
+//   user_id: "string",
+//   event_type: "click|view|purchase|signup|pray|share|like",
+//   source: "web|apple|android",
+//   timestamp: "YYYY-MM-DDThh:mm:ssZ",
+//   properties: {}    // Additional properties can be added here
+// }
+//
+// The `purchase` event has an `amount` and `product_id` field in the properties object.
+//
+//  {
+//    amount: float, // i.e., 19.99
+//    product_id: "string" // i.e., "product_123"
+//  }
+//
+// The `view`, `like`, and `share` events have a `content_id`, `media_type`, and `prayer_type` field in the properties object.
+//
+// {
+//   content_id: "string", // i.e., "content_123"
+//   media_type: "text|video|audio",
+//   prayer_type: "academic|podcast|reflection|lectio_divina|rosary|meditation"
+// }
+//
 // NOTE: The implementation is just to satisfy the compiler.
 app.post('/webhook/events', async (req, res) => {
     const batch: EventBatch = req.body;
