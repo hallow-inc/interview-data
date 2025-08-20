@@ -88,7 +88,7 @@ services:
       minio-setup:
         condition: service_healthy
     environment:
-      DATA_BASE_URL: http://data_server:9090
+      DATA_BASE_URL: http://data_server:9090/api/
       S3_ENDPOINT: http://minio:9000
     volumes:
       - ./batch_pipelines:/app

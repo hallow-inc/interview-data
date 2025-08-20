@@ -8,7 +8,7 @@ import boto3
 import httpx
 from botocore.client import Config
 
-DATA_BASE_URL = os.getenv("DATA_BASE_URL") or "http://localhost:9090/api/v1/"
+DATA_BASE_URL = os.getenv("DATA_BASE_URL") or "http://localhost:9090/api/"
 S3_BUCKET = "datalake"
 S3_ENDPOINT = os.getenv("S3_ENDPOINT") or "http://localhost:9000"
 S3_ROOT_USER = "adminuser"
@@ -74,12 +74,14 @@ class DataPipeline:
     #   offset: int,
     #   total_users: 10000,
     #   users: [
-    #     id: str, # i.e, "user_1",
-    #     age: int,
-    #     status: "free|paid|trial",
-    #     country: "US|BR|IT|FR",
-    #     created_at: str # i.e., "2023-11-08T00:00:00Z"
-    #      ...
+    #     {
+    #       id: str, # i.e, "user_1",
+    #       age: int,
+    #       status: "free|paid|trial",
+    #       country: "US|BR|IT|FR",
+    #       created_at: str # i.e., "2023-11-08T00:00:00Z"
+    #     },
+    #     ...
     #   ]
     # }
     #
