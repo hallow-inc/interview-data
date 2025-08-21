@@ -37,7 +37,7 @@ class DataPipeline:
     # Tips:
     #
     # - Use the `httpx` library to make GET requests to the data server API endpoints.
-    #    i.e., response = httpx.get(DATA_BASE_URL + self.entity, timeout=10)
+    #    i.e., response = httpx.get(DATA_BASE_URL + self.entity, timeout=10, params={"key": "value"})
     def fetch_api_data(self) -> list[dict[str, Any]]:
         """Fetch data from the data server API endpoints"""
         # TODO: Add error handling and retries
