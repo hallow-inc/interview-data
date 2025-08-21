@@ -114,7 +114,6 @@ func (eg *EventGenerator) generateRandomEvent() []Event {
 		Properties: make(map[string]any),
 	}
 
-	// Add type-specific properties
 	if event.EventType == "purchase" {
 		event.Properties["amount"] = rand.Float64()*495 + 5
 		event.Properties["product_id"] = fmt.Sprintf("prod_%d", rand.Intn(100)+1)
@@ -226,7 +225,6 @@ func main() {
 
 	generator := NewEventGenerator(webhookURL)
 
-	// Pull endpoints
 	app.Get("/api/events", func(c *fiber.Ctx) error {
 		count := min(c.QueryInt("count", 50), 200)
 
@@ -236,7 +234,6 @@ func main() {
 			allEvents = append(allEvents, events...)
 		}
 
-		// Simulate API issues
 		if rand.Float64() < 0.1 { // 10% chance of error
 			return c.Status(503).JSON(fiber.Map{
 				"error": "Service temporarily unavailable",
@@ -261,7 +258,7 @@ func main() {
 		var events []Event
 		for range count {
 			event := generator.generateRandomEvent()[0]
-			event.Source = source // Override source
+			event.Source = source
 			events = append(events, event)
 		}
 

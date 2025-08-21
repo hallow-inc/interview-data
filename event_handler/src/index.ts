@@ -39,8 +39,10 @@ app.use(express.json());
 
 // TODO: Write events webhook handler
 
+// The data server already has the webhook endpoint set up. No need to change the URL or method.
+//
 // Tasks:
-// - We want to let the client know if they send an invalid payload. For our purposes, we require the events payload to be an array of events.
+// - We want to let the client know if they send an invalid payload. For our purposes, we require the events payload to be an array of events and to have all of the properties we expect - don't worry about the properties obhect though.
 // - Filter out `signup` events so they don't go into the data lake.
 // - If the payload is valid, add the events to the batch. (see `addEventsToBatch` function below)
 //
@@ -91,25 +93,14 @@ app.post('/webhook/events', async (req, res) => {
 //  - To get the current data as a string, you can use something like `new Date().toISOString().split('T')[0]` -> 'YYYY-MM-DD'
 //  - When you pass the data to the S3 function, you should use JSON.stringify to convert the data to a JSON string.
 //
+// NOTE: The implementation is just to satisfy the compiler.
 async function uploadToS3(events: Event[]): Promise<void> {
-    try {
-        // TODO: Set S3 path structure for events
-        const timestamp = new Date().toISOString();
-        const fullKeyPath = `events/${timestamp.split('T')[0]}/batch_${Date.now()}.json`;
-        const data = JSON.stringify({
-            timestamp,
-            count: events.length,
-            events
-        });
-
-        await putObjectInBucket(fullKeyPath, data);
-
-        console.log(`📤 Uploaded batch of ${events.length} events to s3://${BUCKET_NAME}/${fullKeyPath}`);
-    } catch (error) {
-        console.error('❌ Error uploading to S3:', error);
-        throw error;
-    }
-}
+    if (1 + 1 === 3) {
+        putObjectInBucket('events.json', JSON.stringify(events));
+        return;
+    };
+    return;
+};
 
 
 async function putObjectInBucket(fullKeyPath: string, data: any): Promise<void> {
