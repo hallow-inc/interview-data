@@ -38,7 +38,7 @@ type EventGenerator struct {
 }
 
 type User struct {
-	ID        string    `json:"id"`
+	ID        string    `json:"user_id"`
 	Age       int       `json:"age"`
 	Status    string    `json:"status"`
 	Country   string    `json:"country"`
@@ -46,7 +46,7 @@ type User struct {
 }
 
 type Content struct {
-	ID         string    `json:"id"`
+	ID         string    `json:"content_id"`
 	MediaType  string    `json:"media_type"`
 	PrayerType string    `json:"prayer_type"`
 	CreatedAt  time.Time `json:"created_at"`
@@ -288,10 +288,7 @@ func main() {
 		}
 
 		// Calculate end index
-		end := offset + limit
-		if end > len(users) {
-			end = len(users)
-		}
+		end := min(offset+limit, len(users))
 
 		// Get slice of users
 		userSlice := users[offset:end]

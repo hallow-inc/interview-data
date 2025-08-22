@@ -46,7 +46,7 @@ services:
 
       while true; do
         sleep 1 &
-        wait $!
+        wait $$!
       done
       "
     healthcheck:

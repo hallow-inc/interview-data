@@ -1,4 +1,4 @@
-id,media_type,prayer_type,created_at
+content_id,media_type,prayer_type,created_at
 1,audio,reflection,2023-04-16 14:38:01.803442
 2,video,rosary,2023-03-06 18:41:16.947677
 3,audio,lectio_divina,2023-07-30 16:20:23.51278
