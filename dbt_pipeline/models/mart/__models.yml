@@ -5,7 +5,7 @@ models:
   - name: stg_hallow__users
     description: Hallow users.
     columns:
-      - name: id
+      - name: user_id
       - name: age
       - name: status
       - name: country
@@ -14,7 +14,7 @@ models:
   - name: stg_hallow__sessions
     description: Hallow sessions.
     columns:
-      - name: id
+      - name: session_id
       - name: user_id
       - name: content_id
       - name: is_complete
@@ -23,7 +23,7 @@ models:
   - name: stg_hallow__content
     description: Hallow content.
     columns:
-      - name: id
+      - name: content_id
       - name: media_type
       - name: prayer_type
       - name: created_at

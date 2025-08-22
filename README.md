@@ -28,9 +28,9 @@ Implement the behaviors specified by `TODO`s in each service (except the data-se
 - Don't use LLMs. While they are certainly a useful tool and used at Hallow, we're more interested in how you think. An LLM would only get in the way of that objective.
 - Do use documentation. Seeing how you process information is valuable.
 - Do ask questions.
-- Do explain your thought process.
+- Do explain your thought process. Remember, the goal isn't to find the right answer. This is an open-ended exercise.
 - Do keep your implementation simple. No need to pretend this code isn't running in prod. We don't want you wasting time writing a lot of boilerplate. Being able to code out the concept then explain what you'd do in prod is better for everyone!
-- Don't change any code that doesn't come with a `TODO`. You can, of course, add cod, but changing the scaffolding code, data server, etc., is beyond the scope of this exercise. If you're not sure, just ask!
+- Don't change any code that doesn't come with a `TODO`. You can, of course, add code, but changing the scaffolding code, data server, etc., is beyond the scope of this exercise. If you're not sure, just ask!
 
 ### System Architecture
 
