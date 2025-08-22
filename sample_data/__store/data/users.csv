@@ -1,4 +1,4 @@
-user_id,age,status,country,created_at
+id,age,status,country,created_at
 1,82,trial,US,2023-11-16 11:03:11.992909
 2,70,free,US,2023-05-18 21:28:11.720416
 3,34,free,US,2023-10-29 04:42:30.277635
